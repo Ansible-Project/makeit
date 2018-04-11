@@ -1,0 +1,29 @@
+---
+# add servus user
+- hosts:
+  - linode
+
+  tasks:
+
+   - name: make servus user
+     user:
+      name: "servus"
+     become: true
+
+   - name: add ssh key to servus
+     authorized_key:
+      user: "servus"
+      state: present
+      key: "{{ my_ssh_key }}"
+     become: true
+
+   - name: enable passwordless sudo for servus
+     copy:
+      content: "servus ALL=(ALL) NOPASSWD: ALL"
+      dest: /etc/sudoers.d/servus
+      group: root
+      owner: root
+      mode: 0644
+     become: true
+     register: sudoers_out
+     changed_when: sudoers_out.changed

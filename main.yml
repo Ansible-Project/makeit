@@ -1,0 +1,27 @@
+---
+
+- hosts:
+  - localhost
+
+  tasks:
+#   - name: tell me something
+#     command: id
+#     register: foo
+#     changed_when: no
+
+#   - name: report it
+#     debug:
+#      msg: "{{ foo }}"
+
+   - name: make it
+     linode: "{{ item |combine({'api_key': lookup('env', 'LINODE_API_KEY')}) }}"
+     with_items: "{{ make_some_stuff }}"
+     register: make_it_out
+
+   - name: report it
+     debug:
+      msg: "{{ item.instance }}"
+     with_items: "{{ make_it_out.results }}"
+...
+#[rgws]
+#localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"
