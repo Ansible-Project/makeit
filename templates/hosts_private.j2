@@ -1,9 +1,68 @@
-[linode]
-{% for r in make_it_out.results -%}
+{% macro emit_hostline(r) -%}
 {{ r.instance.fqdn | regex_replace('\..*', ' ') -}}
 ansible_host={% if r.instance.private is defined -%}
 {{ r.instance.private[0].ipv4 }}
 {%- else -%}
 {{ r.instance.public[0].ipv4 }}
 {%- endif %} ansible_ssh_user=root
+{%- endmacro -%}
+[linode]
+{% set jumphosts=[] -%}
+{%- set keystones=[] -%}
+{%- set mons=[] -%}
+{%- set osds=[] -%}
+{%- set rgws=[] -%}
+
+{%- for r in make_it_out.results -%}
+{{ emit_hostline(r) }}
+{% if r.item.tags is defined and r.item.tags | select('equalto','jumphost') | list | length > 0 -%}
+{%- set _ = jumphosts.append(r) -%}
+{%- endif -%}
+{%- if r.item.tags is defined and r.item.tags | select('equalto','keystone') | list | length > 0 -%}
+{%- set _ = keystones.append(r) -%}
+{%- endif -%}
+{%- if r.item.tags is defined and r.item.tags | select('equalto','mon') | list | length > 0 -%}
+{%- set _ = mons.append(r) -%}
+{%- endif -%}
+{%- if r.item.tags is defined and r.item.tags | select('equalto','osd') | list | length > 0 -%}
+{%- set _ = osds.append(r) -%}
+{%- endif -%}
+{%- if r.item.tags is defined and r.item.tags | select('equalto','radosgw') | list | length > 0 -%}
+{%- set _ = rgws.append(r) -%}
+{%- endif -%}
+{%- endfor -%}
+
+{%- if jumphosts | length > 0 -%}
+[jumphosts]
+{% for r in jumphosts -%}
+{{ emit_hostline(r) }}
 {% endfor -%}
+{%- endif -%}
+
+{%- if keystones | length > 0 -%}
+[keystone]
+{% for r in keystones -%}
+{{ emit_hostline(r) }}
+{% endfor -%}
+{%- endif -%}
+
+{%- if mons | length > 0 -%}
+[mons]
+{% for r in mons -%}
+{{ emit_hostline(r) }}
+{% endfor -%}
+{%- endif -%}
+
+{%- if osds | length > 0 -%}
+[osds]
+{% for r in osds -%}
+{{ emit_hostline(r) }}
+{% endfor -%}
+{%- endif -%}
+
+{%- if rgws | length > 0 -%}
+[rgws]
+{% for r in rgws -%}
+{{ emit_hostline(r) }}
+{% endfor -%}
+{%- endif -%}

@@ -40,9 +40,9 @@ my $rc;
 my $tags = {
 'j' => 'jumphost',
 'k' => 'keystone',
-'m' => 'mons',
-'o' => 'osds',
-'r' => 'rgws',
+'m' => 'mon',
+'o' => 'osd',
+'r' => 'rgw',
 };
 
 my %counts;
@@ -51,7 +51,7 @@ sub generate_name
 {
 	my ($name) = @_;
 	my $instance = ++$counts{$name};
-	return "$name-$instance";
+	return "$name$instance";
 }
 
 sub get_size
