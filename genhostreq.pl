@@ -42,7 +42,7 @@ my $tags = {
 'k' => 'keystone',
 'm' => 'mon',
 'o' => 'osd',
-'r' => 'rgw',
+'r' => 'radosgw',
 };
 
 my %counts;
