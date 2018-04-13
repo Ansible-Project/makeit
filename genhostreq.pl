@@ -17,11 +17,13 @@
 #	B:
 #		| [0-9]+ ;	-- planid
 #	C:
-#		[a-z]*		name, such as "rgw".
-#	E:	| size ;	amount of disk for swap
-#	F:	| "/" count "x" size | "/" size ;	extra disk
+#		[a-z]*		-- name, such as "rgw".
+#	E:	| size ;	-- amount of disk for swap
+#	F:	| F | "/" count "x" size | F "/" size	-- extra disk
+#		| F "/" [jkmor]* ;	-- switches; jumphost etc.
 #	count:	[0-9]*
 #	size:	[ 0-9]+[kmg]
+#
 #
 
 use common::sense;
@@ -34,6 +36,14 @@ my $pflag;
 my $Pflag;
 my $sflag;
 my $rc;
+
+my $tags = {
+'j' => 'jumphost',
+'k' => 'keystone',
+'m' => 'mons',
+'o' => 'osds',
+'r' => 'rgws',
+};
 
 my %counts;
 
@@ -73,6 +83,7 @@ sub make_hosts
 	my $name = '';
 	my $size;
 	my @extra;
+	my @tags;
 	my $nstorage;
 	if ($j =~ m%^([0-9]+)x%) {
 		$count = 0+substr($j, $-[1], $+[1]-$-[1]);
@@ -92,6 +103,13 @@ sub make_hosts
 	while ($j =~ m%^/%) {
 		substr($j, $-[0], $+[0]-$-[0], '');
 		$nstorage = 1;
+		if ($j =~ m%^([jkmor]+)%) {
+			my $jk = substr($j, $-[1], $+[1]-$-[1], '');
+			for my $c ( split('', $jk ) ) {
+				push @tags, $tags->{$c};
+			}
+			next;
+		}
 		if ($j =~ m%^([0-9]+)x%) {
 			$nstorage = 0+substr($j, $-[1], $+[1]-$-[1]);
 			substr($j, $-[1], 1+$+[1]-$-[1]) = '';
@@ -115,6 +133,7 @@ sub make_hosts
 		die "Did not eat all of host specifier, left: <$j>\n";
 	}
 	@{$r->{extra}} = @extra if @extra;
+	@{$r->{tags}} = @tags;
 	for my $i ( 1..$count) {
 		my $q = clone($r);
 		$q->{name} = generate_name($name);
@@ -206,6 +225,12 @@ sub write_hosts
 				print ", Size: ".($i->{size}/1048576)."";
 				print ", Type: '".$i->{type}."'";
 				print "}\n";
+			}
+		}
+		if (exists($j->{tags})) {
+		print "  tags:\n";
+			for my $i ( @{$j->{tags}}) {
+				print "   - $i\n";
 			}
 		}
 	}
