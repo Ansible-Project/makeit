@@ -198,9 +198,6 @@ sub write_hosts
 		print "  ssh_pub_key: '".$j->{sshkey}."'\n" if defined($j->{sshkey});
 		print "  swap: ".$j->{swap}."\n" if defined($j->{swap});
 		print "  displaygroup: ".$j->{group}."\n" if defined($j->{group});
-		print "  wait: yes\n";
-		print "  wait_timeout: 600\n";
-		print "  state: present\n";
 		if (exists($j->{extra})) {
 		print "  additional_disks:\n";
 			for my $i ( @{$j->{extra}}) {

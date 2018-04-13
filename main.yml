@@ -4,6 +4,12 @@
   - localhost
 
   tasks:
+   - name: set default value for fetch_directory
+     set_fact:
+       fetch_directory: ""
+     when:
+       - fetch_directory is not defined
+
 #   - name: tell me something
 #     command: id
 #     register: foo
@@ -14,14 +20,61 @@
 #      msg: "{{ foo }}"
 
    - name: make it
-     linode: "{{ item |combine({'api_key': lookup('env', 'LINODE_API_KEY')}) }}"
+     linode:
+       additional_disks: "{{ item.additional_disks if item.additional_disks is defined else [] }}"
+       alert_bwin_enabled: "{{ item.alert_bwin_enabled if item.alert_bwin_enabled is defined else false }}"
+       alert_bwout_enabled: "{{ item.alert_bwout_enabled if item.alert_bwout_enabled is defined else false }}"
+       alert_bwout_threshold: "{{ item.alert_bwout_threshold if item.alert_bwout_threshold is defined else 0 }}"
+       alert_bwquota_enabled: "{{ item.alert_bwquota_enabled if item.alert_bwquota_enabled is defined else 0 }}"
+       alert_bwquota_threshold: "{{ item.alert_bwquota_threshold if item.alert_bwquota_threshold is defined else 0 }}"
+       alert_cpu_enabled: "{{ item.alert_cpu_enabled if item.alert_cpu_enabled is defined else false }}"
+       alert_cpu_threshold: "{{ item.alert_cpu_threshold if item.alert_cpu_threshold is defined else 0 }}"
+       alert_diskio_enabled: "{{ item.alert_diskio_enabled if item.alert_diskio_enabled is defined else false }}"
+       alert_diskio_threshold: "{{ item.alert_diskio_threshold if item.alert_diskio_threshold is defined else 0 }}"
+       backupweeklyday: "{{ item.backupweeklyday if item.backupweeklyday is defined else 0 }}"
+       datacenter: "{{ item.datacenter }}"
+       displaygroup: "{{ item.displaygroup if item.displaygroup is defined else '' }}"
+       distribution: "{{ item.distribution }}"
+       kernel_id: "{{ item.kernel_id if item.kernel_id is defined else 0 }}"
+       linode_id: "{{ item.linode_id if item.linode_id is defined else 0 }}"
+       name: "{{ item.name }}"
+       password: "{{ item.password if item.password is defined else '' }}"
+       payment_term: "{{ item.payment_term if item.payment_term is defined else 1 }}"
+       plan: "{{ item.plan }}"
+       private_ip: "{{ item.private_ip if item.private_ip is defined else false }}"
+       ssh_pub_key: "{{ item.ssh_pub_key }}"
+       state: present
+       swap: "{{ item.swap if item.swap is defined else 512 }}"
+       wait: yes
+       wait_timeout: 600
      with_items: "{{ make_some_stuff }}"
      register: make_it_out
 
-   - name: report it
-     debug:
-      msg: "{{ item.instance }}"
-     with_items: "{{ make_it_out.results }}"
+#   - name: report it
+#     template:
+#     debug:
+#      msg: "{{ item.instance }}"
+#     with_items: "{{ make_it_out.results }}"
+
+   - name: save it
+     local_action:
+       module: copy
+       content: |
+               {{ make_it_out.results }}
+       dest: "{{ fetch_directory  + 'raw_results' }}"
+
+   - name: host file public ipaddrs
+     local_action:
+       module: template
+       src: "hosts_public.j2"
+       dest: "{{ fetch_directory  + 'hosts_public' }}"
+
+   - name: host file private ipaddrs
+     local_action:
+       module: template
+       src: "hosts_private.j2"
+       dest: "{{ fetch_directory  + 'hosts_private' }}"
+
 ...
 #[rgws]
 #localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"

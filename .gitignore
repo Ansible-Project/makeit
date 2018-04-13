@@ -2,3 +2,6 @@
 group_vars
 *.retry
 ,*
+raw_results
+hosts_private
+hosts_public

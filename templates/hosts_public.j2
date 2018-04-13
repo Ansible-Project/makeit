@@ -1,0 +1,5 @@
+[linode]
+{% for r in make_it_out.results -%}
+{{ r.instance.fqdn | regex_replace('\..*', ' ') -}}
+ansible_host={{ r.instance.public[0].ipv4 }} ansible_ssh_user=root
+{% endfor -%}

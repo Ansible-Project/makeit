@@ -1,0 +1,9 @@
+[linode]
+{% for r in make_it_out.results -%}
+{{ r.instance.fqdn | regex_replace('\..*', ' ') -}}
+ansible_host={% if r.instance.private is defined -%}
+{{ r.instance.private[0].ipv4 }}
+{%- else -%}
+{{ r.instance.public[0].ipv4 }}
+{%- endif %} ansible_ssh_user=root
+{% endfor -%}
