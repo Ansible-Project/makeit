@@ -15,9 +15,9 @@
 #	A:
 #		| [0-9]+ "x" ;	-- specify # of instances
 #	B:
-#		| [0-9]+ ;	-- planid
+#		[-_a-z]*	-- name, such as "rgw".
 #	C:
-#		[a-z]*		-- name, such as "rgw".
+#		| [0-9]+ ;	-- planid
 #	E:	| size ;	-- amount of disk for swap
 #	F:	| F | "/" count "x" size | F "/" size	-- extra disk
 #		| F "/" [jkmor]* ;	-- switches; jumphost etc.
@@ -42,6 +42,7 @@ my $tags = {
 'k' => 'keystone',
 'm' => 'mon',
 'o' => 'osd',
+'g' => 'mgr',
 'r' => 'radosgw',
 };
 
@@ -103,7 +104,7 @@ sub make_hosts
 	while ($j =~ m%^/%) {
 		substr($j, $-[0], $+[0]-$-[0], '');
 		$nstorage = 1;
-		if ($j =~ m%^([jkmor]+)%) {
+		if ($j =~ m%^([jkmorg]+)%) {
 			my $jk = substr($j, $-[1], $+[1]-$-[1], '');
 			for my $c ( split('', $jk ) ) {
 				push @tags, $tags->{$c};

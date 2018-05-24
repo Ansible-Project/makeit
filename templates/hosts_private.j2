@@ -12,6 +12,7 @@ ansible_host={% if r.instance.private is defined -%}
 {%- set mons=[] -%}
 {%- set osds=[] -%}
 {%- set rgws=[] -%}
+{%- set mgrs=[] -%}
 
 {%- for r in make_it_out.results -%}
 {{ emit_hostline(r) }}
@@ -29,6 +30,9 @@ ansible_host={% if r.instance.private is defined -%}
 {%- endif -%}
 {%- if r.item.tags is defined and r.item.tags | select('equalto','radosgw') | list | length > 0 -%}
 {%- set _ = rgws.append(r) -%}
+{%- endif -%}
+{%- if r.item.tags is defined and r.item.tags | select('equalto','mgr') | list | length > 0 -%}
+{%- set _ = mgrs.append(r) -%}
 {%- endif -%}
 {%- endfor -%}
 
@@ -63,6 +67,13 @@ ansible_host={% if r.instance.private is defined -%}
 {%- if rgws | length > 0 -%}
 [rgws]
 {% for r in rgws -%}
+{{ emit_hostline(r) }}
+{% endfor -%}
+{%- endif -%}
+
+{%- if mgrs | length > 0 -%}
+[mgrs]
+{% for r in mgrs -%}
 {{ emit_hostline(r) }}
 {% endfor -%}
 {%- endif -%}
