@@ -13,6 +13,7 @@ ansible_host={% if r.instance.private is defined -%}
 {%- set osds=[] -%}
 {%- set rgws=[] -%}
 {%- set mgrs=[] -%}
+{%- set ceph=[] -%}
 
 {%- for r in make_it_out.results -%}
 {{ emit_hostline(r) }}
@@ -24,15 +25,19 @@ ansible_host={% if r.instance.private is defined -%}
 {%- endif -%}
 {%- if r.item.tags is defined and r.item.tags | select('equalto','mon') | list | length > 0 -%}
 {%- set _ = mons.append(r) -%}
+{%- set _ = ceph.append(r) -%}
 {%- endif -%}
 {%- if r.item.tags is defined and r.item.tags | select('equalto','osd') | list | length > 0 -%}
 {%- set _ = osds.append(r) -%}
+{%- set _ = ceph.append(r) -%}
 {%- endif -%}
 {%- if r.item.tags is defined and r.item.tags | select('equalto','radosgw') | list | length > 0 -%}
 {%- set _ = rgws.append(r) -%}
+{%- set _ = ceph.append(r) -%}
 {%- endif -%}
 {%- if r.item.tags is defined and r.item.tags | select('equalto','mgr') | list | length > 0 -%}
 {%- set _ = mgrs.append(r) -%}
+{%- set _ = ceph.append(r) -%}
 {%- endif -%}
 {%- endfor -%}
 
@@ -74,6 +79,13 @@ ansible_host={% if r.instance.private is defined -%}
 {%- if mgrs | length > 0 -%}
 [mgrs]
 {% for r in mgrs -%}
+{{ emit_hostline(r) }}
+{% endfor -%}
+{%- endif -%}
+
+{%- if ceph | length > 0 -%}
+[ceph]
+{% for r in ceph -%}
 {{ emit_hostline(r) }}
 {% endfor -%}
 {%- endif -%}
