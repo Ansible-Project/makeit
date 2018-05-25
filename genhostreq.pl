@@ -40,10 +40,10 @@ my $rc;
 my $tags = {
 'j' => 'jumphost',
 'k' => 'keystone',
-'m' => 'mon',
-'o' => 'osd',
-'g' => 'mgr',
-'r' => 'radosgw',
+'m' => ['mon', 'ceph'],
+'o' => ['osd', 'ceph'],
+'g' => ['mgr', 'ceph'],
+'r' => ['radosgw', 'ceph'],
 };
 
 my %counts;
@@ -106,8 +106,16 @@ sub make_hosts
 		$nstorage = 1;
 		if ($j =~ m%^([jkmorg]+)%) {
 			my $jk = substr($j, $-[1], $+[1]-$-[1], '');
+			my %r;
 			for my $c ( split('', $jk ) ) {
-				push @tags, $tags->{$c};
+				my $t = $tags->{$c};
+				if (ref $t ne 'ARRAY') {
+					$t = [ $t ];
+				}
+				$r{$_} = 1 for @$t;
+			}
+			for my $x ( sort keys %r ) {
+				push @tags, $x;
 			}
 			next;
 		}
